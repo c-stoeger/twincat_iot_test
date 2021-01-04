@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="ST_ClickTypeCommand" Id="{ba4b04e7-8bf0-40eb-9a4c-e0f255250c82}">
+    <Declaration><![CDATA[TYPE ST_ClickTypeCommand :
+STRUCT
+	eClickType: E_ClickType;
+	iCommand: I_Command;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

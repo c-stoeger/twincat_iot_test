@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="E_ClickType" Id="{ec883491-c20b-41d3-bac8-4ea2a4f5cfb3}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_ClickType :
+(
+	single := 0,
+	double := 1,
+	triple := 2,
+	longPress := 3,
+	longRelease := 4
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

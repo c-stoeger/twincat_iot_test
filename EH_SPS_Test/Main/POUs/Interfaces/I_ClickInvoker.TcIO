@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_ClickInvoker" Id="{ae027be1-1f58-49f9-a00a-a53aa2faabc8}">
+    <Declaration><![CDATA[INTERFACE I_ClickInvoker EXTENDS I_CyclicExecution
+]]></Declaration>
+    <Method Name="SetCommand" Id="{55e19570-9abf-479c-a810-ceb0cd09143a}">
+      <Declaration><![CDATA[METHOD SetCommand : BOOL
+VAR_INPUT
+	eClickType: E_ClickType; // The Clicktype for which the command shall be registered
+	iCmd: I_Command; // The command to be registered
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <GVL Name="GVL_MQTT_CONST" Id="{512f1f3f-f378-4579-8585-43da5493d193}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+END_VAR
+VAR_GLOBAL CONSTANT
+	DEV_DISCOVER_NODEID : STRING(3) := 'sps';
+	DEV_DISCOVER_MANUFACTURER : STRING(10) := 'beckhoff';
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

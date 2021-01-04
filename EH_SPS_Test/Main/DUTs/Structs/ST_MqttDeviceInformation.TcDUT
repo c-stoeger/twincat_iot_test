@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="ST_MqttDeviceInformation" Id="{aa74b4e3-5ed2-4904-8d3f-017c70c5aea3}">
+    <Declaration><![CDATA[TYPE ST_MqttDeviceInformation :
+STRUCT
+	// connections: ARRAY[0..1] OF STRING(20); // not working at the moment
+	identifiers: STRING(20);
+	manufacturer: STRING(20);
+	model: STRING(30);
+	name: STRING(30);
+	sw_version: STRING(10);
+	// via_device: STRING(20); // not needed at the moment
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_MqttMessageReceiver" Id="{44a731eb-092a-4e6b-b9a6-a9847f702b69}">
+    <Declaration><![CDATA[INTERFACE I_MqttMessageReceiver
+]]></Declaration>
+    <Method Name="OnMqttMessage" Id="{993a4ddc-f32b-46f5-bda1-504ff5b3e3df}">
+      <Declaration><![CDATA[METHOD OnMqttMessage : BOOL
+VAR_INPUT
+	rMqttMessage : REFERENCE TO FB_IotMqttMessage;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

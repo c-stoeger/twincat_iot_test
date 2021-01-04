@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_Light" Id="{c7346ac9-0c6b-4aa0-ae43-55b5f385f241}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Light IMPLEMENTS I_Switchable
+VAR_OUTPUT
+	// output of the FB. This is the state of the light.
+	bActive AT %Q*: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Active" Id="{2c31f253-24ee-413c-bec4-dadccd1ea919}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3c7b4bb3-6c5e-4e93-93a3-84dc12254a48}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Active := bActive;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Off" Id="{352e17f0-b85c-42a2-b903-34ea7807ce68}">
+      <Declaration><![CDATA[METHOD Off : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bActive := false;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="On" Id="{69bbc1b6-42ee-45ce-a690-92d654fbb732}">
+      <Declaration><![CDATA[METHOD On : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bActive := true;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Light">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Light.Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Light.Off">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Light.On">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

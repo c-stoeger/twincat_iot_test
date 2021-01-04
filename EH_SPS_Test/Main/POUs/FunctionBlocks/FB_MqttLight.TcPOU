@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttLight" Id="{6ebf0452-2f75-444e-81f6-69cd58362e1d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLight EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	rMqttController: REFERENCE TO FB_MqttController;
+	sStateTopic: STRING(255); // The topic to publish the state to
+	sCommandTopic : STRING(255);
+	sOnPayload: STRING(10); // The text which is published if On() is called
+	sOffPayload: STRING(10); // The test which is published if Off() is called
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{d0dff497-1b25-4b88-be14-73174c0961cf}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	rMqttController : REFERENCE TO FB_MqttController;
+	sMainTopic : STRING(255); // The topic to publish
+	sOnPayload : STRING(10) := 'ON'; // The text which is published when On() is called 
+	sOffPayload : STRING(10) := 'OFF'; // The text which is published when Off() is called
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.rMqttController REF= rMqttController;
+THIS^.sStateTopic := CONCAT(STR1 := sMainTopic, STR2 := '/state');
+THIS^.sCommandTopic := CONCAT(STR1 := sMainTopic, STR2 := '/set');
+THIS^.rMqttController.RegisterMqttMessageReceive(iMqttMessageReceiver := THIS^, sTopic := sCommandTopic);
+THIS^.sOnPayload := sOnPayload;
+THIS^.sOffPayload := sOffPayload;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Off" Id="{6468975b-7258-4f68-a05c-0a86da40a0e4}">
+      <Declaration><![CDATA[METHOD Off : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.Off();
+THIS^.SendStatus();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="On" Id="{b6ca792a-382b-486d-974e-7e4a9442e530}">
+      <Declaration><![CDATA[METHOD On : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.On();
+THIS^.SendStatus();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="OnMqttMessage" Id="{ad538b84-229a-42d7-81c4-02f2e5e5fe70}">
+      <Declaration><![CDATA[METHOD OnMqttMessage : BOOL
+VAR_INPUT
+	rMqttMessage : REFERENCE TO FB_IotMqttMessage;
+END_VAR
+VAR
+	sPayload : STRING(10);
+	bSuccess : BOOL := FALSE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttMessage)) THEN
+	IF rMqttMessage.GetPayload(pPayload := ADR(sPayload),
+			nPayloadSize := 10,
+			bSetNullTermination := TRUE) THEN
+		IF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sOnPayload)) THEN
+			THIS^.On();
+			bSuccess := TRUE;
+		ELSIF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sOffPayload)) THEN
+			THIS^.Off();
+			bSuccess := TRUE;
+		END_IF
+	END_IF
+END_IF
+
+OnMqttMessage := bSuccess;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SendStatus" Id="{24f70da2-24c1-4861-a1e8-abd502fc6cfc}">
+      <Declaration><![CDATA[METHOD PRIVATE SendStatus : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	sStatus : STRING(10);
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttController) AND __ISVALIDREF(rMqttController.MqttClient)) THEN
+	IF (rMqttController.MqttClient.bConnected) THEN
+		IF Active THEN
+			sStatus := sOnPayload;
+		ELSE
+			sStatus := sOffPayload;
+		END_IF
+		rMqttController.MqttClient.Publish(sTopic:= sStateTopic, 
+			pPayload:= ADR(sStatus), nPayloadSize:= LEN2(ADR(sStatus)),
+			eQoS:= TcIotMqttQos.AtLeastOnceDelivery, bRetain:= TRUE,
+			bQueue:= FALSE);
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttLight">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="13" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.Off">
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.On">
+      <LineId Id="4" Count="0" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.OnMqttMessage">
+      <LineId Id="6" Count="1" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="23" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.SendStatus">
+      <LineId Id="6" Count="1" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="8" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

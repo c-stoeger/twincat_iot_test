@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="F_StrCmp" Id="{f2170669-27ea-480c-a050-a7d78649282b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_StrCmp : BOOL
+VAR_INPUT
+	pStr1 : POINTER TO BYTE;
+	pStr2 : POINTER TO BYTE;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF pStr1 = 0 OR pStr2 = 0 THEN
+	F_StrCmp := FALSE;
+	RETURN;
+END_IF
+
+WHILE TRUE DO
+	IF pStr1^ <> pStr2^ THEN
+		F_StrCmp := FALSE;
+		RETURN;
+	ELSIF (pStr1^ = 0) AND (pStr2^ = 0) THEN
+		F_StrCmp := TRUE;
+		RETURN;
+	ELSE
+		pStr1 := pStr1 + 1;
+		pStr2 := pStr2 + 1;
+	END_IF 
+END_WHILE]]></ST>
+    </Implementation>
+    <LineIds Name="F_StrCmp">
+      <LineId Id="13" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="21" Count="7" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

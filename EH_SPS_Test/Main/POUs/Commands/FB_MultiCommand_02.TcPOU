@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MultiCommand_02" Id="{804ddd8f-55f8-4511-b908-30a910ee8b98}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MultiCommand_02 IMPLEMENTS I_Command
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	arrCommands: ARRAY[0..NUM_OF_COMMANDS - 1] OF I_Command; // The commands to be executed
+END_VAR
+VAR CONSTANT
+	NUM_OF_COMMANDS: INT := 2;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{b65c617e-284b-4500-aaf6-07a4925369dd}">
+      <Declaration><![CDATA[METHOD Execute
+VAR
+	nIndex: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nIndex := 0 TO NUM_OF_COMMANDS - 1 DO
+	IF (arrCommands[nIndex] <> 0) THEN
+		arrCommands[nIndex].Execute();
+	END_IF
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{6392d148-7a40-499b-a48e-e1885ec4b43b}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	arrCmd : ARRAY[0..NUM_OF_COMMANDS - 1] OF I_Command;
+END_VAR
+VAR
+	nIndex : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nIndex := 0 TO (NUM_OF_COMMANDS - 1) DO
+	arrCommands[nIndex] := arrCmd[nIndex];
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetCommand" Id="{2889ce0c-5501-423a-b0fc-05856e869ad5}">
+      <Declaration><![CDATA[METHOD SetCommand : BOOL
+VAR_INPUT
+	nPos : INT;
+	iCmd : I_Command;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (nPos >= 0) AND (nPos < NUM_OF_COMMANDS) AND (iCmd <> 0) THEN
+	arrCommands[nPos] := iCmd;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MultiCommand_02">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MultiCommand_02.Execute">
+      <LineId Id="4" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MultiCommand_02.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="11" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_MultiCommand_02.SetCommand">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

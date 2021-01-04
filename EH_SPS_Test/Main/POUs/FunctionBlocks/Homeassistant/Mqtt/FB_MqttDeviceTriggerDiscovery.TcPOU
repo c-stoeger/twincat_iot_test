@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttDeviceTriggerDiscovery" Id="{4c86cbbe-4ac9-4788-b201-7c50d96ffe98}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttDeviceTriggerDiscovery EXTENDS FB_MqttDeviceDiscoveryBase
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	stConfig : ST_MqttDeviceTriggerConfiguration;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Component" Id="{6bea9714-f3b9-4e0f-9c4d-cd024141adf5}">
+      <Declaration><![CDATA[PROPERTY PROTECTED Component : STRING(30)]]></Declaration>
+      <Get Name="Get" Id="{bbf2f96e-25e6-4090-8a75-bb0d96250629}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Component := 'device_automation';]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="ConfigToJson" Id="{1ee008b6-f689-4ffa-b15f-3da2ef996a7c}">
+      <Declaration><![CDATA[METHOD  ConfigToJson : STRING(1000)
+VAR_INPUT
+END_VAR
+VAR
+	fbJsonWriter : FB_JsonSaxWriter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbJsonWriter.ResetDocument();
+fbJsonWriter.StartObject();
+fbJsonWriter.AddKeyString(key := 'atype', value := 'trigger');
+fbJsonWriter.AddKeyString(key := 'pl', value := stConfig.payload);
+fbJsonWriter.AddKeyNumber(key := 'qos', value := stConfig.qos);
+fbJsonWriter.AddKeyString(key := 't', value := stConfig.topic);
+fbJsonWriter.AddKeyString(key := 'type', value := stConfig.event_type);
+fbJsonWriter.AddKeyString(key := 'stype', value := stConfig.event_subtype);
+THIS^.DevInfoToJson(fbJsonWriter); 
+fbJsonWriter.EndObject();
+fbJsonWriter.CopyDocument(pDoc := ConfigToJson, nDoc := 1000);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Configuration" Id="{10a29d25-fd76-4ca0-83f2-2659c1b4be8d}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Configuration : ST_MqttDeviceTriggerConfiguration]]></Declaration>
+      <Get Name="Get" Id="{df18c658-0017-47c1-a585-bab4d895b09f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Configuration := THIS^.stConfig;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a12039bb-934b-433e-93af-c7ef7b3c4b7c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.stConfig := Configuration;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="RegisterDevice" Id="{3141bcb7-d277-4214-9006-27a1b29ed3e1}">
+      <Declaration><![CDATA[METHOD RegisterDevice : BOOL
+VAR
+	sTempTopic : STRING(255) := THIS^.DiscoveryTopic;
+	sConfig : STRING(1000) := THIS^.ConfigToJson();
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttClient)) THEN
+	IF (rMqttClient.bConnected) THEN
+		RegisterDevice := rMqttClient.Publish(sTopic := sTempTopic,
+			pPayload := ADR(sConfig), nPayloadSize := LEN2(ADR(sConfig)),
+			eQos := TcIotMqttQos.AtLeastOnceDelivery, bRetain := TRUE,
+			bQueue := FALSE);
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery.Component.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery.ConfigToJson">
+      <LineId Id="5" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="38" Count="4" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="69" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery.Configuration.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery.Configuration.Set">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerDiscovery.RegisterDevice">
+      <LineId Id="4" Count="0" />
+      <LineId Id="12" Count="4" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

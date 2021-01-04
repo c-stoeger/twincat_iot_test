@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_ClickPanel2" Id="{c22a6e69-c64d-4d4c-ab5d-c8a6ebfdc5fb}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ClickPanel2
+VAR_INPUT
+END_VAR
+VAR
+	arrIClickInvoker: ARRAY[0..1] OF I_ClickInvoker; // The switches of this panel
+	nIndex: INT; // Looping helper
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR nIndex := 0 TO 1 DO
+	arrIClickInvoker[nIndex].CyclicExecute();
+END_FOR]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{ad1b5fa4-6997-4754-b614-9b2c9eeb8b86}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	arrIClickInvoker : ARRAY[0..1] OF I_ClickInvoker; // The invokers
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nIndex := 0 TO 1 DO
+	this^.arrIClickInvoker[nIndex] := arrIClickInvoker[nIndex];
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetClickInvoker" Id="{25fb2da2-ea0a-4c66-b9ef-b8ef12adcddd}">
+      <Declaration><![CDATA[METHOD SetClickInvoker : BOOL
+VAR_INPUT
+	nPos : INT; // Position of the Clickinvoker
+	iClickInvoker : I_ClickInvoker; // the invoker itself...
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (nPos >= 0) AND (nPos <= 1) AND (iClickInvoker <> 0) THEN
+	THIS^.arrFbSwitchClick[nPos] := iClickInvoker;
+	SetClickInvoker := TRUE;
+ELSE
+	SetClickInvoker := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetCommand" Id="{3652e52e-18cd-4210-b86b-416a3236b454}">
+      <Declaration><![CDATA[METHOD PUBLIC SetCommand : BOOL
+VAR_INPUT
+	nPosition: INT;				// The position of the switch button
+	eClickType: E_ClickType;	// The Clicktype for which the command shall be set
+	iCmd: I_Command;			// The command to be set to position nPosition
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF ((nPosition >= 0) AND (nPosition <= 1) AND (iCmd <> 0)) THEN
+	THIS^.arrIClickInvoker[nPosition].SetCommand(eClickType := eClickType, iCmd := iCmd);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_ClickPanel2">
+      <LineId Id="177" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="171" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ClickPanel2.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ClickPanel2.SetClickInvoker">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ClickPanel2.SetCommand">
+      <LineId Id="83" Count="1" />
+      <LineId Id="75" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

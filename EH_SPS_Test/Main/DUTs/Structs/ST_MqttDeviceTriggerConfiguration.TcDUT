@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="ST_MqttDeviceTriggerConfiguration" Id="{e2511a49-3fd4-4853-8ada-0365f99784be}">
+    <Declaration><![CDATA[(*
+	For more information about the valid values of this struct see:
+	https://www.home-assistant.io/integrations/device_trigger.mqtt/#configuration-variables
+*)
+TYPE ST_MqttDeviceTriggerConfiguration :
+STRUCT
+	payload : STRING(20);		// The payload which shall be sent if the event triggers.
+	qos : INT;					// The max qos level to be used for receiving messages.
+	topic : STRING(80);			// The events are sent to this topic.
+	event_type : STRING(20);	// e.g. button_short_press, button_double_press, ...
+	event_subtype : STRING(20); // which button fired (button_1, button_2, ...)
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

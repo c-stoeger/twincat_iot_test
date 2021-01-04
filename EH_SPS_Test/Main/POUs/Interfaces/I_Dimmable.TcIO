@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_Dimmable" Id="{ec33756f-9a06-41e5-af2f-a28154902510}">
+    <Declaration><![CDATA[INTERFACE I_Dimmable
+]]></Declaration>
+    <Method Name="GetLevel" Id="{db3bacc6-eef9-415f-9e7d-e9b2d36cd73b}">
+      <Declaration><![CDATA[METHOD GetLevel : BYTE
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="SetLevel" Id="{7d962b88-744b-449d-a149-4b7d4c39d8c9}">
+      <Declaration><![CDATA[METHOD SetLevel : BOOL
+VAR_INPUT
+	// Level of dimmable
+	Level: BYTE := 0;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

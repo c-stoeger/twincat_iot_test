@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_MqttDeviceDiscoveryProvider" Id="{f3644253-7c52-45bf-a602-bd3dbc5088a5}">
+    <Declaration><![CDATA[INTERFACE I_MqttDeviceDiscoveryProvider
+]]></Declaration>
+    <Method Name="GetMqttDeviceDiscovery" Id="{58f72f22-8a5a-4387-b568-4c9c2ab69278}">
+      <Declaration><![CDATA[METHOD GetMqttDeviceDiscovery : I_MqttDeviceDiscovery
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

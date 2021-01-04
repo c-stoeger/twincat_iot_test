@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttDeviceDiscoveryBase" Id="{9654c6b2-6f10-4e61-8a0b-59ae21a32fbd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ABSTRACT FB_MqttDeviceDiscoveryBase IMPLEMENTS I_MqttDeviceDiscovery
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	rMqttClient : REFERENCE TO FB_IotMqttClient;
+	stDeviceInformation : ST_MqttDeviceInformation;
+	sNodeId : STRING(20);
+	sObjectId : STRING(40);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Component" Id="{3fa30243-05d8-4dad-bfc8-fb9bd082f61b}">
+      <Declaration><![CDATA[PROPERTY PROTECTED ABSTRACT Component : STRING(30)]]></Declaration>
+      <Get Name="Get" Id="{3b175efa-a3a6-4dbc-a88e-85f27ccc8f18}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="ConfigToJson" Id="{a049afc8-8c59-4fa6-bc97-664fcab5cd93}">
+      <Declaration><![CDATA[METHOD ABSTRACT ConfigToJson : STRING(1000)
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="DeleteDevice" Id="{78be0345-afe0-4324-91af-e422264c99c9}">
+      <Declaration><![CDATA[METHOD DeleteDevice : BOOL
+VAR
+	sTempTopic : STRING(255) := THIS^.DiscoveryTopic;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttClient)) THEN
+	IF (rMqttClient.bConnected) THEN
+		DeleteDevice := rMqttClient.Publish(sTopic := sTempTopic,
+			pPayload := 0, nPayloadSize := 0,
+			eQos := TcIotMqttQos.AtLeastOnceDelivery, bRetain := TRUE,
+			bQueue := FALSE);
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="DeviceInformation" Id="{75117c2c-0749-431e-8b33-d6d3ed8cc75e}">
+      <Declaration><![CDATA[PROPERTY DeviceInformation : ST_MqttDeviceInformation]]></Declaration>
+      <Get Name="Get" Id="{fafef1c8-c782-4c69-a74c-57373c47ba86}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[DeviceInformation := this^.stDeviceInformation;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a016afaa-4925-40c5-9f89-a31d85a964bd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[this^.stDeviceInformation := DeviceInformation;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="DevInfoToJson" Id="{5f1e21f5-f85a-4426-bda1-29f230d1d48f}">
+      <Declaration><![CDATA[METHOD PROTECTED DevInfoToJson : BOOL
+VAR_INPUT
+	rJsonWriter : REFERENCE TO FB_JsonSaxWriter; 
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rJsonWriter.AddKey(key := 'dev');
+rJsonWriter.StartObject();
+(* setting connections is not supported at the moment... 
+rJsonWriter.AddKey(key := 'cns');
+rJsonWriter.StartArray();
+rJsonWriter.AddString(value := stDeviceInformation.connections[0]);
+rJsonWriter.AddString(value := stDeviceInformation.connections[1]);
+rJsonWriter.EndArray();
+*)
+rJsonWriter.AddKeyString(key := 'ids', value := stDeviceInformation.identifiers);
+rJsonWriter.AddKeyString(key := 'mf', value := stDeviceInformation.manufacturer);
+rJsonWriter.AddKeyString(key := 'mdl', value := stDeviceInformation.model);
+rJsonWriter.AddKeyString(key := 'name', value := stDeviceInformation.name);
+rJsonWriter.AddKeyString(key := 'sw', value := stDeviceInformation.sw_version);
+// rJsonWriter.AddKeyString(key := 'via_device', value := stDeviceInformation.via_device);
+rJsonWriter.EndObject();]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="DiscoveryTopic" Id="{c2d40ace-e57c-42e5-94c0-9cbf8dd81b66}">
+      <Declaration><![CDATA[PROPERTY PROTECTED DiscoveryTopic : STRING(255)]]></Declaration>
+      <Get Name="Get" Id="{57713942-8fe6-4a1d-8f4f-60acaf8c178f}">
+        <Declaration><![CDATA[VAR
+	sTemp : STRING(255);
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sTemp := CONCAT('homeassistant/', THIS^.Component);
+sTemp := CONCAT(sTemp, '/');
+sTemp := CONCAT(sTemp, THIS^.NodeId);
+sTemp := CONCAT(sTemp, '/');
+sTemp := CONCAT(sTemp, THIS^.ObjectId);
+sTemp := CONCAT(sTemp, '/');
+DiscoveryTopic := CONCAT(sTemp, 'config');
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="NodeId" Id="{437d477b-4be6-4f18-8bc1-e2ddaac6f988}">
+      <Declaration><![CDATA[PROPERTY NodeId : STRING(20)]]></Declaration>
+      <Get Name="Get" Id="{94974204-25c7-42f6-bbe5-7ae587319d2b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[NodeId := THIS^.sNodeId;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3e5e9dcd-8f05-4639-8a4c-67c6e05ba21d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.sNodeId := NodeId;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="ObjectId" Id="{d62db051-abca-4001-8368-4cf2070d2094}">
+      <Declaration><![CDATA[PROPERTY ObjectId : STRING(40)]]></Declaration>
+      <Get Name="Get" Id="{5a5e5f81-8b29-4023-852a-cb46b90eb7f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ObjectId := THIS^.sObjectId;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{31e03fae-5e7e-43d9-a262-c784cdc9a5e6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.sObjectId := ObjectId;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="RegisterDevice" Id="{97a1a9e1-79f7-418f-a68f-659e0df02395}">
+      <Declaration><![CDATA[METHOD RegisterDevice : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(* Nothing is done here. Has to be done in subclass *)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetMqttClient" Id="{7ee6d510-9c63-44d9-b23d-0b6b6d6df193}">
+      <Declaration><![CDATA[METHOD PUBLIC SetMqttClient : BOOL
+VAR_INPUT
+	rMqttClient : REFERENCE TO FB_IotMqttClient;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.rMqttClient REF= rMqttClient;
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.Component.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.ConfigToJson">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.DeleteDevice">
+      <LineId Id="9" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="11" Count="2" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.DeviceInformation.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.DeviceInformation.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.DevInfoToJson">
+      <LineId Id="7" Count="2" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="10" Count="3" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="14" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.DiscoveryTopic.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.NodeId.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.NodeId.Set">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.ObjectId.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.ObjectId.Set">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.RegisterDevice">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceDiscoveryBase.SetMqttClient">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

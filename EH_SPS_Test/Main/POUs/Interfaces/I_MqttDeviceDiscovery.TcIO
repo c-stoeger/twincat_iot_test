@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_MqttDeviceDiscovery" Id="{e93832ea-e390-40fa-bb33-fa8bb210e5a8}">
+    <Declaration><![CDATA[INTERFACE I_MqttDeviceDiscovery
+]]></Declaration>
+    <Method Name="DeleteDevice" Id="{37973996-03e6-4298-a383-ed456bdc262d}">
+      <Declaration><![CDATA[METHOD DeleteDevice : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="DeviceInformation" Id="{d021716b-b41a-4219-b4ab-fb7754fbca75}">
+      <Declaration><![CDATA[PROPERTY DeviceInformation : ST_MqttDeviceInformation]]></Declaration>
+      <Get Name="Get" Id="{a7f7d274-1961-4138-8036-fddcee753d61}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="NodeId" Id="{ddb3980d-920c-48a3-8782-afcba888d87a}">
+      <Declaration><![CDATA[PROPERTY NodeId : STRING(20)]]></Declaration>
+      <Get Name="Get" Id="{51407675-11c5-4ad3-ade9-37dc3a049507}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="ObjectId" Id="{aec62e32-12bc-49fe-8daf-9b2e35fc352a}">
+      <Declaration><![CDATA[PROPERTY ObjectId : STRING(40)]]></Declaration>
+      <Get Name="Get" Id="{05c6a9aa-cc09-4751-a299-4a6213338543}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="RegisterDevice" Id="{eabaaa50-efc6-4c24-bc93-e68d8b58d71a}">
+      <Declaration><![CDATA[METHOD RegisterDevice : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

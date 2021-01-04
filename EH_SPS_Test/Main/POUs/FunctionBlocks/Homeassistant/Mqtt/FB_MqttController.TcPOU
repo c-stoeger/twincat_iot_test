@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttController" Id="{45accff2-5463-4005-9dab-ce795df53680}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttController
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbMqttClient : FB_IotMqttClient;
+	fbMqttMsgQueue : FB_IotMqttMessageQueue;
+	fbMqttMsg : FB_IotMqttMessage;
+	sTopicBuffer : STRING(MAX_TOPIC_LENGTH);
+	aMsgTopics : ARRAY[0..MAX_NUM_MSG_RECEIVER - 1] OF STRING(255);
+	aMsgReceivers : ARRAY[0..MAX_NUM_MSG_RECEIVER - 1] OF I_MqttMessageReceiver;
+	aMsgReceiverValid : ARRAY[0..MAX_NUM_MSG_RECEIVER - 1] OF BOOL;
+	bTopicsSubscribed : BOOL;
+END_VAR
+VAR CONSTANT
+	MAX_TOPIC_LENGTH : UINT := 255;
+	MAX_NUM_MSG_RECEIVER : UINT := 100;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{566f4b7d-a94d-4946-8cad-bce18818b499}">
+      <Declaration><![CDATA[METHOD Execute : BOOL
+VAR_INPUT
+	bConnect : BOOL;
+END_VAR
+VAR
+	iMsgReceiver : I_MqttMessageReceiver;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbMqttClient.Execute(bConnect := bConnect);
+
+IF THIS^.fbMqttClient.bConnected AND NOT bTopicsSubscribed THEN
+	bTopicsSubscribed := THIS^.SubscribeTopics();
+ELSIF NOT THIS^.fbMqttClient.bConnected THEN
+	bTopicsSubscribed := FALSE;
+END_IF
+
+IF THIS^.fbMqttMsgQueue.nQueuedMessages > 0 THEN
+	IF fbMqttMsgQueue.Dequeue(fbMessage := THIS^.fbMqttMsg) THEN
+		// search the callback for the topic
+		IF fbMqttMsg.GetTopic(pTopic := ADR(THIS^.sTopicBuffer), nTopicSize := MAX_TOPIC_LENGTH) THEN
+			IF GetMqttMessageReceiver(sTopic := THIS^.sTopicBuffer, iMsgRcv => iMsgReceiver) THEN
+				IF iMsgReceiver <> 0 THEN
+					iMsgReceiver.OnMqttMessage(rMqttMessage := fbMqttMsg);
+				END_IF
+			END_IF
+		END_IF
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{28fc9d7a-2f24-4775-9368-c016a9c2d713}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	sHostname : STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbMqttClient.sHostName := sHostname;
+this^.fbMqttClient.ipMessageQueue := this^.fbMqttMsgQueue;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMqttMessageReceiver" Id="{7c6cfa39-1f50-458d-b44d-31f47b32bd4d}">
+      <Declaration><![CDATA[METHOD GetMqttMessageReceiver : BOOL
+VAR_INPUT
+	sTopic : REFERENCE TO STRING(255);
+END_VAR
+VAR_OUTPUT
+	iMsgRcv : I_MqttMessageReceiver;
+END_VAR
+VAR
+	nIndex : UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nIndex := 0 TO MAX_NUM_MSG_RECEIVER - 1 DO
+	IF aMsgReceiverValid[nIndex] AND F_StrCmp(pStr1 := ADR(sTopic), pStr2 := ADR(aMsgTopics[nIndex])) THEN
+		iMsgRcv := aMsgReceivers[nIndex];
+		GetMqttMessageReceiver := TRUE;
+		RETURN;
+	END_IF
+END_FOR
+
+GetMqttMessageReceiver := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="MqttClient" Id="{c1117721-f1f6-496a-8199-b9b068ab4898}">
+      <Declaration><![CDATA[PROPERTY MqttClient : REFERENCE TO FB_IotMqttClient]]></Declaration>
+      <Get Name="Get" Id="{b6ec6790-89fb-4e84-a558-e55924094112}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[MqttClient REF= this^.fbMqttClient;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="RegisterMqttMessageReceive" Id="{f8867e00-a00e-4d2d-b720-bc05f3722244}">
+      <Declaration><![CDATA[METHOD RegisterMqttMessageReceive : BOOL
+VAR_INPUT
+	iMqttMessageReceiver : I_MqttMessageReceiver;
+	sTopic : STRING(255);
+END_VAR
+VAR
+	nIndex : UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF iMqttMessageReceiver <> 0 THEN
+	FOR nIndex := 0 TO MAX_NUM_MSG_RECEIVER - 1 DO
+		IF NOT aMsgReceiverValid[nIndex] THEN
+			aMsgReceivers[nIndex] := iMqttMessageReceiver;
+			aMsgTopics[nIndex] := sTopic;
+			aMsgReceiverValid[nIndex] := TRUE;
+			RegisterMqttMessageReceive := TRUE;
+			RETURN;
+		END_IF
+	END_FOR
+END_IF
+
+RegisterMqttMessageReceive := FALSE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SubscribeTopics" Id="{a9aeef81-5e50-4b90-9384-11d18ef4a276}">
+      <Declaration><![CDATA[METHOD SubscribeTopics : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	nIndex : UINT;
+	bSubscribed : BOOL := FALSE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nIndex := 0 TO MAX_NUM_MSG_RECEIVER DO
+	IF aMsgReceiverValid[nIndex] AND fbMqttClient.bConnected THEN
+		bSubscribed := fbMqttClient.Subscribe(sTopic := aMsgTopics[nIndex], eQoS := TcIotMqttQos.AtMostOnceDelivery);
+		IF NOT bSubscribed THEN
+			SubscribeTopics := FALSE;
+			RETURN;
+		END_IF
+	END_IF
+END_FOR
+
+SubscribeTopics := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttController">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.Execute">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.GetMqttMessageReceiver">
+      <LineId Id="5" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.MqttClient.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.RegisterMqttMessageReceive">
+      <LineId Id="20" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttController.SubscribeTopics">
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="MAIN" Id="{67f803fc-52dc-461e-9d93-f6bbdb39c1bd}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	// Communication:
+	//fbMqttClient: FB_IotMqttClient;
+	fbMqttController : FB_MqttController(sHostname := '192.168.188.13');
+	bMqttClientConnect: BOOL := TRUE;
+	//fbDevTrigDis : FB_MqttDeviceTriggerDiscovery(fbMqttClient);
+	
+	// Invokers:
+	// The switches ;)
+	fbButton1: FB_SwitchClick;
+	fbButton2: FB_SwitchClick;
+	
+	// Receivers:
+	// Light in the kitchen
+	fbKitchenLight: FB_MqttLight(
+		rMqttController := fbMqttController,
+		sMainTopic := 'haus/kueche/esstisch/licht',
+		sOnPayload := 'ON',
+		sOffPayload := 'OFF');
+	
+	// Commands:
+	// switching on
+	fbKitchenLightOnCommand: FB_LightOnCommand(fbKitchenLight);
+	fbKitchenLightOffCommand: FB_LightOffCommand(fbKitchenLight);
+	fbKitchenLightToggleCommand: FB_LightToggleCommand(fbKitchenLight);
+	fbDevTriggerCommand1: FB_MqttDeviceTriggerCommand(
+								rMqttClient := fbMqttController.MqttClient,
+								sMainTopic := 'haus/kueche/sw',
+								sObjectId := 'sw_kueche_1_single',
+								sIdentifier := 'sw_kueche_1',
+								sEventType := 'button_short_press',
+								sEventSubType := 'button_1',
+								sName := 'Schalter 1.1 Kueche Tuere');
+	fbDevTriggerCommand2: FB_MqttDeviceTriggerCommand(
+								rMqttClient:= fbMqttController.MqttClient,
+								sMainTopic := 'haus/kueche/sw',
+								sObjectId := 'sw_kueche_1_double',
+								sIdentifier := 'sw_kueche_1',
+								sEventType := 'button_double_press',
+								sEventSubType := 'button_1',
+								sName := 'Schalter 1.1 Kueche Tuere');
+	arrCmds: ARRAY[0..1] OF I_Command:= [fbDevTriggerCommand1, fbDevTriggerCommand2];
+	fbKombiCommand: FB_MultiCommand_02(arrCmds);
+
+	
+	// Helpers:
+	bInit: BOOL := FALSE;
+	bRetVal : BOOL := FALSE;
+	bMqttDevicesRegistered : BOOL := FALSE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF (NOT bInit) THEN
+	fbButton1.SetCommand(E_ClickType.single, fbDevTriggerCommand1);
+	fbButton1.SetCommand(E_ClickType.double, fbDevTriggerCommand2);
+	
+	fbButton2.SetCommand(E_ClickType.single, fbKitchenLightToggleCommand);
+	fbButton2.SetCommand(E_ClickType.double, fbKitchenLightOffCommand);
+	
+	bInit := TRUE;
+ELSE
+	fbButton1.CyclicExecute();
+	fbButton2.CyclicExecute();
+END_IF
+
+IF NOT bMqttDevicesRegistered THEN
+	bMqttDevicesRegistered := fbDevTriggerCommand1.GetMqttDeviceDiscovery().RegisterDevice();
+	IF bMqttDevicesRegistered THEN
+		bMqttDevicesRegistered := fbDevTriggerCommand2.GetMqttDeviceDiscovery().RegisterDevice();
+	END_IF
+END_IF
+
+fbMqttController.Execute(bMqttClientConnect);]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="131" Count="1" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="83" Count="1" />
+      <LineId Id="458" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="459" Count="2" />
+      <LineId Id="310" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="133" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

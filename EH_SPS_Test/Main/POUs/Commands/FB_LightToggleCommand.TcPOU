@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_LightToggleCommand" Id="{1be5fb85-af3c-4300-8483-79076bf1e423}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LightToggleCommand IMPLEMENTS I_Command
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	// Reference to the Light that should be switched on.
+	iLight: I_Switchable;
+	bState: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{c547f585-8956-4230-aac2-8ae79a234e86}">
+      <Declaration><![CDATA[METHOD Execute
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (iLight <> 0) THEN
+	IF (iLight.Active) THEN
+		THIS^.iLight.Off();
+	ELSE
+		THIS^.iLight.On();
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{a88efd9c-4de7-4cff-9b85-8987f64460cc}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	iSwitchable : I_Switchable;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (iSwitchable <> 0) THEN
+	THIS^.iLight := iSwitchable;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_LightToggleCommand">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_LightToggleCommand.Execute">
+      <LineId Id="4" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_LightToggleCommand.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

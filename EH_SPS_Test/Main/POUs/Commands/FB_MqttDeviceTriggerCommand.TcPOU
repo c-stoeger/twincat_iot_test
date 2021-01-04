@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttDeviceTriggerCommand" Id="{3855d526-a00b-4283-b3c5-06bc738205bf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttDeviceTriggerCommand IMPLEMENTS I_Command, I_MqttDeviceDiscoveryProvider
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	rMqttClient: REFERENCE TO FB_IotMqttClient;
+	fbDeviceDiscovery: FB_MqttDeviceTriggerDiscovery;
+	sTopic: STRING(255); // topic to publish the payload to
+	sPayload: STRING(20); // payload to be published
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{895e47de-764f-4117-bfea-7a888c3fe2ce}">
+      <Declaration><![CDATA[METHOD Execute
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttClient)) THEN
+	IF (rMqttClient.bConnected) THEN
+		rMqttClient.Publish(sTopic:= THIS^.sTopic, 
+			pPayload:= ADR(THIS^.sPayload), nPayloadSize:= LEN2(ADR(THIS^.sPayload)),
+			eQoS:= TcIotMqttQos.AtMostOnceDelivery, bRetain:= TRUE,
+			bQueue:= FALSE);
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{bdccf266-8853-48cd-bd45-4c48f6e39fd0}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	rMqttClient: REFERENCE TO FB_IotMqttClient;
+	sMainTopic: STRING(255);
+	sObjectId : STRING(40);
+	sIdentifier : STRING(20);
+	sEventType: STRING(20);
+	sEventSubType: STRING(20); // This string will be added to the topic
+	//sPayload: STRING(10);
+	sName : STRING(30);
+END_VAR
+VAR
+	stDevInfo : ST_MqttDeviceInformation;
+	stDevConfig : ST_MqttDeviceTriggerConfiguration;
+	sTemp : STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.rMqttClient REF= rMqttClient;
+THIS^.fbDeviceDiscovery.SetMqttClient(rMqttClient := THIS^.rMqttClient);
+sTemp := concat(STR1 := sMainTopic, STR2 := '/');
+sTemp := concat(STR1 := sTemp, STR2 := sIdentifier);
+sTemp := concat(STR1 := sTemp, STR2 := '/');
+THIS^.sTopic := CONCAT(STR1 := sTemp, STR2 := sEventSubType);
+THIS^.sPayload := sEventType;
+
+THIS^.fbDeviceDiscovery.NodeId := GVL_MQTT_CONST.DEV_DISCOVER_NODEID;
+THIS^.fbDeviceDiscovery.ObjectId := sObjectId;
+stDevConfig.topic := sTopic;
+stDevConfig.payload := sPayload;
+stDevConfig.qos := 0;
+stDevConfig.event_type := sEventType;
+stDevConfig.event_subtype := sEventSubType;
+THIS^.fbDeviceDiscovery.Configuration := stDevConfig;
+stDevInfo.identifiers := sIdentifier;
+stDevInfo.manufacturer := GVL_MQTT_CONST.DEV_DISCOVER_MANUFACTURER;
+stDevInfo.model := 'FB_MqttDeviceTriggerCommand';
+stDevInfo.sw_version := GVL_CONST.SW_VERSION;
+stDevInfo.name := sName;
+THIS^.fbDeviceDiscovery.DeviceInformation := stDevInfo;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMqttDeviceDiscovery" Id="{54fcc03a-9145-4b92-bac8-c3c50bb06b05}">
+      <Declaration><![CDATA[METHOD GetMqttDeviceDiscovery : I_MqttDeviceDiscovery
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetMqttDeviceDiscovery := THIS^.fbDeviceDiscovery;
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttDeviceTriggerCommand">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerCommand.Execute">
+      <LineId Id="5" Count="6" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerCommand.FB_init">
+      <LineId Id="12" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="4" />
+      <LineId Id="40" Count="5" />
+      <LineId Id="47" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttDeviceTriggerCommand.GetMqttDeviceDiscovery">
+      <LineId Id="4" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

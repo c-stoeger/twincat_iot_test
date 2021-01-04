@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_SwitchClick" Id="{0828d51e-e88b-48b3-b64d-69cb28d10232}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SwitchClick IMPLEMENTS I_ClickInvoker
+VAR_INPUT
+	bSwitch AT %I*: BOOL; // The switch which is pressed by the user 
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	singleClickCommand: I_Command; // The command to be executed if single click
+	doubleClickCommand: I_Command; // The command to be executed if single click
+	longPressedCommand: I_Command; // The command to be executed if long Press starts
+	longReleasedCommand: I_Command; // The command to be executed if long Press ends
+	fbLongReleasedEdge: F_TRIG;
+	fbClick: OSCAT_BUILDING.CLICK_MODE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CyclicExecute" Id="{85683dcc-dfee-4ceb-8014-c2bab5132ebb}">
+      <Declaration><![CDATA[METHOD CyclicExecute : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbClick(in := bSwitch);
+
+IF fbClick.SINGLE THEN
+	THIS^.SingleClick();
+ELSIF fbClick.DOUBLE THEN
+	THIS^.DoubleClick();
+ELSIF fbClick.TP_LONG THEN
+	THIS^.LongPress();
+ELSE
+	fbLongReleasedEdge(clk := fbClick.LONG);
+	IF fbLongReleasedEdge.Q THEN
+		THIS^.LongRelease();
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="DoubleClick" Id="{da937dd0-7cce-44a4-8245-407e7b0c8c33}">
+      <Declaration><![CDATA[METHOD PROTECTED DoubleClick : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (doubleClickCommand <> 0) THEN
+	doubleClickCommand.Execute();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{256600d5-0b6a-4c5d-9351-fabc96fcd45e}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.singleClickCommand := 0;
+THIS^.doubleClickCommand := 0;
+THIS^.longPressedCommand := 0;
+THIS^.longReleasedCommand := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="LongPress" Id="{087de767-3206-4536-bce2-5e7b33dc9cee}">
+      <Declaration><![CDATA[METHOD PROTECTED LongPress : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (longPressedCommand <> 0) THEN
+	longPressedCommand.Execute();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="LongRelease" Id="{bae69711-08a4-4228-87bc-13904cdc8a2b}">
+      <Declaration><![CDATA[METHOD PROTECTED LongRelease : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (longReleasedCommand <> 0) THEN
+	longReleasedCommand.Execute();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetCommand" Id="{ef3bdfff-8dfc-4077-9d0b-32a512e24702}">
+      <Declaration><![CDATA[METHOD SetCommand : BOOL
+VAR_INPUT
+	eClickType: E_ClickType; // The Clicktype for which the command shall be registered
+	iCmd: I_Command; // The command to be registered
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF ((eClickType = E_ClickType.single) AND (iCmd <> 0)) THEN
+	THIS^.singleClickCommand := iCmd;
+	SetCommand := TRUE;
+ELSIF ((eClickType = E_ClickType.double) AND (iCmd <> 0)) THEN
+	THIS^.doubleClickCommand := iCmd;
+	SetCommand := TRUE;
+ELSIF ((eClickType = E_ClickType.longPress) AND (iCmd <> 0)) THEN
+	THIS^.longPressedCommand := iCmd;
+	SetCommand := TRUE;
+ELSIF ((eClickType = E_ClickType.longRelease) AND (iCmd <> 0)) THEN
+	THIS^.longReleasedCommand := iCmd;
+	SetCommand := TRUE;
+ELSE
+	SetCommand := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SingleClick" Id="{a179e325-9d50-472e-80dc-1d6794121968}">
+      <Declaration><![CDATA[METHOD PROTECTED SingleClick : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (singleClickCommand <> 0) THEN
+	singleClickCommand.Execute();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_SwitchClick">
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.CyclicExecute">
+      <LineId Id="5" Count="2" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.DoubleClick">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.FB_init">
+      <LineId Id="7" Count="3" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.LongPress">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.LongRelease">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.SetCommand">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="8" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SwitchClick.SingleClick">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

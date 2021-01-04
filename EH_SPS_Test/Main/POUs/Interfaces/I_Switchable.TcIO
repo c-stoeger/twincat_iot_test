@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_Switchable" Id="{29d91e68-88a3-4fc7-bfbf-5e03920843bf}">
+    <Declaration><![CDATA[INTERFACE I_Switchable
+]]></Declaration>
+    <Property Name="Active" Id="{6f11b715-3331-4f72-bc39-07e3410fcdd5}">
+      <Declaration><![CDATA[PROPERTY Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fc206d9b-003c-41a9-aa8e-2cb979bff0e1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="Off" Id="{e385c2c4-956e-4ee3-98ad-8907da012b89}">
+      <Declaration><![CDATA[METHOD Off : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="On" Id="{84093c63-3f32-49a5-896b-aaa987fea412}">
+      <Declaration><![CDATA[METHOD On : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>
