@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="ST_MqttLightConfiguration" Id="{5a5ab5c1-2740-4ce8-99fe-2b9de1a59299}">
+    <Declaration><![CDATA[(*
+	For more information about the valid values of this struct see:
+	https://www.home-assistant.io/integrations/light.mqtt/#configuration-variables
+*)
+TYPE ST_MqttLightConfiguration :
+STRUCT
+	command_topic : STRING(80); // to this topic are the commands for on/off sent
+	state_topic : STRING(80);	// the light sends state to this topic
+	unique_id : STRING(20);		// needed for distinguishment in dev registry
+	name : STRING(30);
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

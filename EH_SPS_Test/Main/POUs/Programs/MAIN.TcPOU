@@ -19,8 +19,8 @@ VAR
 	fbKitchenLight: FB_MqttLight(
 		rMqttController := fbMqttController,
 		sMainTopic := 'haus/kueche/esstisch/licht',
-		sOnPayload := 'ON',
-		sOffPayload := 'OFF');
+		sIdentifier := 'licht_esstisch',
+		sName := 'Fressthekenlampe');
 	
 	// Commands:
 	// switching on
@@ -72,6 +72,9 @@ IF NOT bMqttDevicesRegistered THEN
 	IF bMqttDevicesRegistered THEN
 		bMqttDevicesRegistered := fbDevTriggerCommand2.GetMqttDeviceDiscovery().RegisterDevice();
 	END_IF
+	IF bMqttDevicesRegistered THEN
+		bMqttDevicesRegistered := fbKitchenLight.GetMqttDeviceDiscovery().RegisterDevice();
+	END_IF
 END_IF
 
 fbMqttController.Execute(bMqttClientConnect);]]></ST>
@@ -91,6 +94,7 @@ fbMqttController.Execute(bMqttClientConnect);]]></ST>
       <LineId Id="307" Count="0" />
       <LineId Id="309" Count="0" />
       <LineId Id="459" Count="2" />
+      <LineId Id="513" Count="2" />
       <LineId Id="310" Count="0" />
       <LineId Id="134" Count="0" />
       <LineId Id="133" Count="0" />

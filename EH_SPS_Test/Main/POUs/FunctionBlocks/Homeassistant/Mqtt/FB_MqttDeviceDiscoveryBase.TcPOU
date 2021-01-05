@@ -156,11 +156,21 @@ END_VAR
         </Implementation>
       </Set>
     </Property>
-    <Method Name="RegisterDevice" Id="{97a1a9e1-79f7-418f-a68f-659e0df02395}">
+    <Method Name="RegisterDevice" Id="{3141bcb7-d277-4214-9006-27a1b29ed3e1}">
       <Declaration><![CDATA[METHOD RegisterDevice : BOOL
-]]></Declaration>
+VAR
+	sTempTopic : STRING(255) := THIS^.DiscoveryTopic;
+	sConfig : STRING(1000) := THIS^.ConfigToJson();
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[(* Nothing is done here. Has to be done in subclass *)]]></ST>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttClient)) THEN
+	IF (rMqttClient.bConnected) THEN
+		RegisterDevice := rMqttClient.Publish(sTopic := sTempTopic,
+			pPayload := ADR(sConfig), nPayloadSize := LEN2(ADR(sConfig)),
+			eQos := TcIotMqttQos.AtLeastOnceDelivery, bRetain := TRUE,
+			bQueue := FALSE);
+	END_IF
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="SetMqttClient" Id="{7ee6d510-9c63-44d9-b23d-0b6b6d6df193}">
@@ -231,6 +241,8 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_MqttDeviceDiscoveryBase.RegisterDevice">
       <LineId Id="4" Count="0" />
+      <LineId Id="12" Count="4" />
+      <LineId Id="10" Count="1" />
     </LineIds>
     <LineIds Name="FB_MqttDeviceDiscoveryBase.SetMqttClient">
       <LineId Id="5" Count="0" />

@@ -30,6 +30,9 @@
     <Compile Include="DUTs\Structs\ST_MqttDeviceTriggerConfiguration.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DUTs\Structs\ST_MqttLightConfiguration.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="GVLs\GVL_CONST.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
@@ -69,6 +72,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttDeviceTriggerDiscovery.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttLightDiscovery.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\Functions\F_StrCmp.TcPOU">

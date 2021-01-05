@@ -1,17 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
   <POU Name="FB_MqttLight" Id="{6ebf0452-2f75-444e-81f6-69cd58362e1d}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLight EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLight EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
 	rMqttController: REFERENCE TO FB_MqttController;
+	fbDeviceDiscovery : FB_MqttLightDiscovery;
 	sStateTopic: STRING(255); // The topic to publish the state to
 	sCommandTopic : STRING(255);
-	sOnPayload: STRING(10); // The text which is published if On() is called
-	sOffPayload: STRING(10); // The test which is published if Off() is called
+	sCmdOnPayload: STRING(10); // The text which is published if On() is called
+	sCmdOffPayload: STRING(10); // The test which is published if Off() is called
+	sStateOnPayload: STRING(10); // The text which is published if On() is called
+	sStateOffPayload: STRING(10); // The test which is published if Off() is called
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -24,16 +27,53 @@ VAR_INPUT
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
 	rMqttController : REFERENCE TO FB_MqttController;
 	sMainTopic : STRING(255); // The topic to publish
-	sOnPayload : STRING(10) := 'ON'; // The text which is published when On() is called 
-	sOffPayload : STRING(10) := 'OFF'; // The text which is published when Off() is called
+	sIdentifier : STRING(20);
+	sName : STRING(30);
+END_VAR
+VAR
+	stDevInfo : ST_MqttDeviceInformation;
+	stDevConfig : ST_MqttLightConfiguration;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.rMqttController REF= rMqttController;
-THIS^.sStateTopic := CONCAT(STR1 := sMainTopic, STR2 := '/state');
-THIS^.sCommandTopic := CONCAT(STR1 := sMainTopic, STR2 := '/set');
+
+THIS^.sStateTopic := CONCAT(STR1 := sMainTopic, STR2 := '/');
+THIS^.sStateTopic := CONCAT(STR1 := THIS^.sStateTopic, STR2 := GVL_MQTT_CONST.TOPIC_STATE);
+THIS^.sCommandTopic := CONCAT(STR1 := sMainTopic, STR2 := '/');
+THIS^.sCommandTopic := CONCAT(STR1 := THIS^.sCommandTopic, STR2 := GVL_MQTT_CONST.TOPIC_COMMAND);
+
+THIS^.fbDeviceDiscovery.SetMqttClient(rMqttClient := THIS^.rMqttController.MqttClient);
+THIS^.fbDeviceDiscovery.NodeId := GVL_MQTT_CONST.DEV_DISCOVER_NODEID;
+THIS^.fbDeviceDiscovery.ObjectId := sIdentifier;
+
+stDevConfig.command_topic := THIS^.sCommandTopic;
+stDevConfig.state_topic := THIS^.sStateTopic;
+stDevConfig.unique_id := sIdentifier;
+stDevConfig.name := sName;
+THIS^.fbDeviceDiscovery.Configuration := stDevConfig;
+
+stDevInfo.identifiers := sIdentifier;
+stDevInfo.manufacturer := GVL_MQTT_CONST.DEV_DISCOVER_MANUFACTURER;
+stDevInfo.model := 'FB_MqttLight';
+stDevInfo.sw_version := GVL_CONST.SW_VERSION;
+stDevInfo.name := sName;
+THIS^.fbDeviceDiscovery.DeviceInformation := stDevInfo;
+
 THIS^.rMqttController.RegisterMqttMessageReceive(iMqttMessageReceiver := THIS^, sTopic := sCommandTopic);
-THIS^.sOnPayload := sOnPayload;
-THIS^.sOffPayload := sOffPayload;]]></ST>
+THIS^.sCmdOnPayload := GVL_MQTT_CONST.PL_LIGHT_COMMAND_ON;
+THIS^.sCmdOffPayload := GVL_MQTT_CONST.PL_LIGHT_COMMAND_OFF;
+THIS^.sStateOnPayload := GVL_MQTT_CONST.PL_LIGHT_STATE_ON;
+THIS^.sStateOffPayload := GVL_MQTT_CONST.PL_LIGHT_STATE_OFF;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMqttDeviceDiscovery" Id="{3be87e2a-d266-408f-b2cb-b557a06b1419}">
+      <Declaration><![CDATA[METHOD GetMqttDeviceDiscovery : I_MqttDeviceDiscovery
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetMqttDeviceDiscovery := this^.fbDeviceDiscovery;]]></ST>
       </Implementation>
     </Method>
     <Method Name="Off" Id="{6468975b-7258-4f68-a05c-0a86da40a0e4}">
@@ -67,10 +107,10 @@ END_VAR
 	IF rMqttMessage.GetPayload(pPayload := ADR(sPayload),
 			nPayloadSize := 10,
 			bSetNullTermination := TRUE) THEN
-		IF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sOnPayload)) THEN
+		IF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sCmdOnPayload)) THEN
 			THIS^.On();
 			bSuccess := TRUE;
-		ELSIF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sOffPayload)) THEN
+		ELSIF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.sCmdOffPayload)) THEN
 			THIS^.Off();
 			bSuccess := TRUE;
 		END_IF
@@ -91,9 +131,9 @@ END_VAR]]></Declaration>
         <ST><![CDATA[IF (__ISVALIDREF(rMqttController) AND __ISVALIDREF(rMqttController.MqttClient)) THEN
 	IF (rMqttController.MqttClient.bConnected) THEN
 		IF Active THEN
-			sStatus := sOnPayload;
+			sStatus := sStateOnPayload;
 		ELSE
-			sStatus := sOffPayload;
+			sStatus := sStateOffPayload;
 		END_IF
 		rMqttController.MqttClient.Publish(sTopic:= sStateTopic, 
 			pPayload:= ADR(sStatus), nPayloadSize:= LEN2(ADR(sStatus)),
@@ -107,11 +147,25 @@ END_IF]]></ST>
       <LineId Id="9" Count="0" />
     </LineIds>
     <LineIds Name="FB_MqttLight.FB_init">
-      <LineId Id="7" Count="0" />
-      <LineId Id="26" Count="0" />
-      <LineId Id="12" Count="0" />
-      <LineId Id="27" Count="0" />
-      <LineId Id="13" Count="1" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="37" Count="3" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="78" Count="4" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="41" Count="4" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttLight.GetMqttDeviceDiscovery">
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_MqttLight.Off">
       <LineId Id="6" Count="0" />
