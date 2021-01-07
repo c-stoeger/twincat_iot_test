@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <DUT Name="ST_MqttCoverPositionConfiguration" Id="{5efd94e1-9289-4f2b-8be2-ebf3e0868f60}">
+    <Declaration><![CDATA[TYPE ST_MqttCoverPositionConfiguration :
+STRUCT
+	command_topic : STRING(80);
+	position_topic : STRING(80);
+	set_position_topic : STRING(80);
+	payload_open : STRING(10);
+	payload_close : STRING(10);
+	payload_stop : STRING(10);
+	position_open : BYTE;
+	position_closed : BYTE;
+	device_class: STRING(10);
+	optimistic : BOOL;
+	unique_id : STRING(20);
+	name : STRING(30);
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

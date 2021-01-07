@@ -24,6 +24,9 @@
     <Compile Include="DUTs\Structs\ST_ClickTypeCommand.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DUTs\Structs\ST_MqttCoverPositionConfiguration.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DUTs\Structs\ST_MqttDeviceInformation.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -62,10 +65,16 @@
     <Compile Include="POUs\FunctionBlocks\FB_Light.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FunctionBlocks\FB_MqttBlindInputAdapter.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FunctionBlocks\FB_MqttLight.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttController.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttCoverPositionDiscovery.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttDeviceDiscoveryBase.TcPOU">

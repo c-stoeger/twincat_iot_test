@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttCoverPositionDiscovery" Id="{8f1e903a-7212-45ea-81b6-d4e9a543b138}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttCoverPositionDiscovery EXTENDS FB_MqttDeviceDiscoveryBase
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	stConfig : ST_MqttCoverPositionConfiguration;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Component" Id="{c29211bf-77a2-41ef-9e16-76709f71f284}">
+      <Declaration><![CDATA[PROPERTY PROTECTED Component : STRING(30)]]></Declaration>
+      <Get Name="Get" Id="{fcb74905-6479-4318-b959-0ee8dc1cb7c9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Component := 'cover';]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="ConfigToJson" Id="{4bc9cc79-fcbc-464c-94c2-fcd98d0296a0}">
+      <Declaration><![CDATA[METHOD  ConfigToJson : STRING(1000)
+VAR_INPUT
+END_VAR
+VAR
+	fbJsonWriter : FB_JsonSaxWriter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbJsonWriter.ResetDocument();
+fbJsonWriter.StartObject();
+fbJsonWriter.AddKeyString(key := 'cmd_t', value := THIS^.stConfig.command_topic);
+fbJsonWriter.AddKeyString(key := 'pos_t', value := THIS^.stConfig.position_topic);
+fbJsonWriter.AddKeyString(key := 'set_pos_t', value := THIS^.stConfig.set_position_topic);
+fbJsonWriter.AddKeyString(key := 'pl_open', value := THIS^.stConfig.payload_open);
+fbJsonWriter.AddKeyString(key := 'pl_cls', value := THIS^.stConfig.payload_close);
+fbJsonWriter.AddKeyString(key := 'pl_stop', value := THIS^.stConfig.payload_stop);
+fbJsonWriter.AddKeyNumber(key := 'pos_open', value := THIS^.stConfig.position_open);
+fbJsonWriter.AddKeyNumber(key := 'pos_clsd', value := THIS^.stConfig.position_closed);
+fbJsonWriter.AddKeyString(key := 'dev_cla', value := THIS^.stConfig.device_class);
+fbJsonWriter.AddKeyBool(key := 'opt', value := THIS^.stConfig.optimistic);
+fbJsonWriter.AddKeyString(key := 'uniq_id', value := THIS^.stConfig.unique_id);
+fbJsonWriter.AddKeyString(key := 'name', value := this^.stConfig.name);
+THIS^.DevInfoToJson(rJsonWriter := fbJsonWriter);
+fbJsonWriter.EndObject();
+fbJsonWriter.CopyDocument(pDoc := ConfigToJson, nDoc := 1000);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Configuration" Id="{8ea59188-aa41-4db8-896e-0d19078e52d4}">
+      <Declaration><![CDATA[PROPERTY Configuration : ST_MqttCoverPositionConfiguration]]></Declaration>
+      <Get Name="Get" Id="{e1d24410-0f53-4811-bb3e-45251393877f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Configuration := this^.stConfig;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ac1bc800-5016-4ed7-b3ba-18cc265964f5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[this^.stConfig := Configuration;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_MqttCoverPositionDiscovery">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttCoverPositionDiscovery.Component.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttCoverPositionDiscovery.ConfigToJson">
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="14" Count="10" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_MqttCoverPositionDiscovery.Configuration.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttCoverPositionDiscovery.Configuration.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

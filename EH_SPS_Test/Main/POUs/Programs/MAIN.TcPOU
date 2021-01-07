@@ -46,6 +46,18 @@ VAR
 	arrCmds: ARRAY[0..1] OF I_Command:= [fbDevTriggerCommand1, fbDevTriggerCommand2];
 	fbKombiCommand: FB_MultiCommand_02(arrCmds);
 
+	fbMqttBlindAdapter : FB_MqttBlindInputAdapter(
+								rMqttController := fbMqttController,
+								sMainTopic := 'haus/og/schlafz/cover_l',
+								sIdentifier := 'schlafz_l',
+								sName := 'Rolladen links');
+	fbRolloInput : OSCAT_BUILDING.BLIND_INPUT;
+	fbRolloControl : OSCAT_BUILDING.BLIND_CONTROL_S;
+	bRolloSup AT %I* : BOOL;
+	bRolloSdn AT %I* : BOOL;
+	bRolloMup AT %Q* : BOOL;
+	bRolloMdn AT %Q* : BOOL;
+	bRolloIn AT %I* : BOOL;
 	
 	// Helpers:
 	bInit: BOOL := FALSE;
@@ -65,6 +77,27 @@ END_VAR
 ELSE
 	fbButton1.CyclicExecute();
 	fbButton2.CyclicExecute();
+	
+	fbMqttBlindAdapter(POS := fbRolloControl.POS);
+	
+	fbRolloInput(POS := fbRolloControl.POS,
+		S1 := bRolloSup,
+		S2 := bRolloSdn,
+		IN := fbMqttBlindAdapter.Q,
+		PI := fbMqttBlindAdapter.PO,
+		SINGLE_SWITCH := FALSE);
+		
+	fbRolloControl(UP := fbRolloInput.QU,
+		DN := fbRolloInput.QD,
+		S_IN := fbRolloInput.STATUS,
+		PI := fbRolloInput.PO,
+		T_UP := T#10S,
+		T_DN := T#10S,
+		T_EXT := T#2S,
+		MU => bRolloMup,
+		MD => bRolloMdn);
+		
+	
 END_IF
 
 IF NOT bMqttDevicesRegistered THEN
@@ -74,6 +107,9 @@ IF NOT bMqttDevicesRegistered THEN
 	END_IF
 	IF bMqttDevicesRegistered THEN
 		bMqttDevicesRegistered := fbKitchenLight.GetMqttDeviceDiscovery().RegisterDevice();
+	END_IF
+	IF bMqttDevicesRegistered THEN
+		bMqttDevicesRegistered := fbMqttBlindAdapter.GetMqttDeviceDiscovery().RegisterDevice();
 	END_IF
 END_IF
 
@@ -89,12 +125,24 @@ fbMqttController.Execute(bMqttClientConnect);]]></ST>
       <LineId Id="57" Count="0" />
       <LineId Id="85" Count="0" />
       <LineId Id="168" Count="0" />
+      <LineId Id="719" Count="1" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="576" Count="0" />
+      <LineId Id="581" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="652" Count="0" />
+      <LineId Id="722" Count="0" />
+      <LineId Id="582" Count="7" />
+      <LineId Id="591" Count="2" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="575" Count="0" />
       <LineId Id="53" Count="0" />
       <LineId Id="308" Count="0" />
       <LineId Id="307" Count="0" />
       <LineId Id="309" Count="0" />
       <LineId Id="459" Count="2" />
       <LineId Id="513" Count="2" />
+      <LineId Id="716" Count="2" />
       <LineId Id="310" Count="0" />
       <LineId Id="134" Count="0" />
       <LineId Id="133" Count="0" />

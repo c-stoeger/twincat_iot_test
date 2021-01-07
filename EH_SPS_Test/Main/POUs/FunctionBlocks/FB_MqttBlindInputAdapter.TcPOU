@@ -1,0 +1,298 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_MqttBlindInputAdapter" Id="{cc90ac40-4d84-4ed4-9c02-9801fa611b74}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttBlindInputAdapter IMPLEMENTS I_CyclicExecution, I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
+VAR_INPUT
+	POS : BYTE;	// Feedback of blind position
+END_VAR
+VAR_OUTPUT
+	Q : BOOL;  // If new values shall be taken into blind_input. Connect this to "BLIND_INPUT.IN"
+	PO : BYTE; // The position values which shall be taken into blind_input. Connect this to "BLIND_INPUT.PI"
+END_VAR
+VAR
+	rMqttController : REFERENCE TO FB_MqttController;
+	fbDeviceDiscovery : FB_MqttCoverPositionDiscovery;
+	stConfig : ST_MqttCoverPositionConfiguration;
+	bSetPositionOutput : BOOL; // var for cycle synchronisation
+	tSendPositionUpdatesPeriod : TIME := T#1s;
+	tLastPositionUpdate : TIME := T#0S;
+	tCurrent : TIME;
+	nLastPositionUpdateValue : BYTE;
+	bStopRequested : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[this^.CyclicExecute();]]></ST>
+    </Implementation>
+    <Method Name="Close" Id="{cc6d0557-b629-4107-b362-6c2dd8863fba}">
+      <Declaration><![CDATA[METHOD Close : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Close := this^.SetPosition(nPosition := GVL_MQTT_CONST.COVER_POSITION_CLOSED);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CyclicExecute" Id="{73b3828a-b629-48f4-9d96-71fbc1d3121f}">
+      <Declaration><![CDATA[METHOD CyclicExecute : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.tCurrent := DWORD_TO_TIME(OSCAT_BASIC.T_PLC_MS());
+
+IF THIS^.bStopRequested THEN
+	THIS^.SetPosition(nPosition := THIS^.POS);
+	this^.bStopRequested := FALSE;
+END_IF
+
+THIS^.Q := THIS^.bSetPositionOutput;
+THIS^.bSetPositionOutput := FALSE;
+
+IF THIS^.tCurrent - THIS^.tLastPositionUpdate > THIS^.tSendPositionUpdatesPeriod THEN
+	IF THIS^.nLastPositionUpdateValue <> THIS^.POS THEN
+		THIS^.SendCurrentPosition();
+		THIS^.tLastPositionUpdate := THIS^.tCurrent;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{7246333c-b820-4b76-9a8e-f893cea0dd95}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	rMqttController : REFERENCE TO FB_MqttController;
+	sMainTopic : STRING(255);
+	sIdentifier : STRING(20);
+	sName : STRING(30);
+END_VAR
+VAR
+	stDevinfo : ST_MqttDeviceInformation;
+	sTemp : STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.rMqttController REF= rMqttController;
+
+THIS^.fbDeviceDiscovery.SetMqttClient(rMqttClient := rMqttController.MqttClient);
+THIS^.fbDeviceDiscovery.NodeId := GVL_MQTT_CONST.DEV_DISCOVER_NODEID;
+THIS^.fbDeviceDiscovery.ObjectId := sIdentifier;
+
+stDevinfo.identifiers := sIdentifier;
+stDevinfo.manufacturer := GVL_MQTT_CONST.DEV_DISCOVER_MANUFACTURER;
+stDevinfo.model := 'FB_MqttBlindInputAdapter';
+stDevinfo.sw_version := GVL_CONST.SW_VERSION;
+stDevinfo.name := sName;
+THIS^.fbDeviceDiscovery.DeviceInformation := stDevinfo;
+
+THIS^.stConfig.name := sName;
+THIS^.stConfig.device_class := GVL_MQTT_CONST.COVER_DEV_CLASS_BLIND;
+THIS^.stConfig.optimistic := FALSE;
+THIS^.stConfig.unique_id := sIdentifier;
+sTemp := CONCAT(STR1 := sMainTopic, STR2 := '/');
+THIS^.stConfig.command_topic := CONCAT(STR1 := sTemp, STR2 := GVL_MQTT_CONST.TOPIC_COMMAND);
+THIS^.stConfig.position_topic := CONCAT(STR1 := sTemp, STR2 := GVL_MQTT_CONST.TOPIC_POSITION);
+THIS^.stConfig.set_position_topic := CONCAT(STR1 := sTemp, STR2 := GVL_MQTT_CONST.TOPIC_SET_POSITION);
+THIS^.stConfig.payload_close := GVL_MQTT_CONST.PL_COVER_COMMAND_CLOSE;
+THIS^.stConfig.payload_open := GVL_MQTT_CONST.PL_COVER_COMMAND_OPEN;
+THIS^.stConfig.payload_stop := GVL_MQTT_CONST.PL_COVER_COMMAND_STOP;
+THIS^.stConfig.position_closed := GVL_MQTT_CONST.COVER_POSITION_CLOSED;
+THIS^.stConfig.position_open := GVL_MQTT_CONST.COVER_POSITION_OPEN;
+THIS^.fbDeviceDiscovery.Configuration := THIS^.stConfig;
+
+THIS^.rMqttController.RegisterMqttMessageReceive(
+	iMqttMessageReceiver := THIS^,
+	sTopic := THIS^.stConfig.command_topic);
+THIS^.rMqttController.RegisterMqttMessageReceive(
+	iMqttMessageReceiver := THIS^,
+	sTopic := THIS^.stConfig.set_position_topic);
+	
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMqttDeviceDiscovery" Id="{19a5b0fa-2797-4da3-badb-7ff858953d6d}">
+      <Declaration><![CDATA[METHOD GetMqttDeviceDiscovery : I_MqttDeviceDiscovery
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetMqttDeviceDiscovery := this^.fbDeviceDiscovery;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="OnMqttMessage" Id="{54017421-8044-4cda-8757-be5692466d5a}">
+      <Declaration><![CDATA[METHOD OnMqttMessage : BOOL
+VAR_INPUT
+	rMqttMessage	: REFERENCE TO Tc3_IotBase.FB_IotMqttMessage;
+END_VAR
+VAR
+	sPayload : STRING(10);
+	nNewPosition : BYTE;
+	bSuccess : BOOL := FALSE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttMessage)) THEN
+	IF rMqttMessage.CompareTopic(sTopic := THIS^.stConfig.command_topic) THEN
+		IF rMqttMessage.GetPayload(pPayload := ADR(sPayload),
+				nPayloadSize := 10,
+				bSetNullTermination := TRUE) THEN
+			IF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.stConfig.payload_close)) THEN
+				THIS^.Close();
+				bSuccess := TRUE;
+			ELSIF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.stConfig.payload_open)) THEN
+				THIS^.Open();
+				bSuccess := TRUE;
+			ELSIF F_StrCmp(pStr1 := ADR(sPayload), pStr2 := ADR(THIS^.stConfig.payload_stop)) THEN
+				THIS^.Stop();
+				bSuccess := TRUE;
+			END_IF
+		END_IF
+	ELSIF rMqttMessage.CompareTopic(sTopic := THIS^.stConfig.set_position_topic) THEN
+		IF rMqttMessage.GetPayload(pPayload := ADR(sPayload),
+				nPayloadSize := 10,
+				bSetNullTermination := TRUE) THEN
+			nNewPosition := OSCAT_BASIC.DEC_TO_BYTE(DEC := sPayload);
+			bSuccess := THIS^.SetPosition(nPosition := nNewPosition);
+		END_IF
+	END_IF
+END_IF
+
+OnMqttMessage := bSuccess;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Open" Id="{0ab06868-9c44-46c6-92ef-0d193062c329}">
+      <Declaration><![CDATA[METHOD Open : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Open := this^.SetPosition(nPosition := GVL_MQTT_CONST.COVER_POSITION_OPEN);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SendCurrentPosition" Id="{53e02ceb-f931-4efe-befd-d664c589c2b7}">
+      <Declaration><![CDATA[METHOD PRIVATE SendCurrentPosition : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	nPositionValue : BYTE;
+	sPosValue : STRING(4);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (__ISVALIDREF(rMqttController) AND __ISVALIDREF(rMqttController.MqttClient)) THEN
+	IF (rMqttController.MqttClient.bConnected) THEN
+		nPositionValue := THIS^.POS;
+		sPosValue := BYTE_TO_DECSTR(in := nPositionValue, iPrecision := 1);
+		SendCurrentPosition := rMqttController.MqttClient.Publish(sTopic:= THIS^.stConfig.position_topic, 
+			pPayload:= ADR(sPosValue), nPayloadSize:= LEN2(ADR(sPosValue)),
+			eQoS:= TcIotMqttQos.AtMostOnceDelivery, bRetain:= TRUE,
+			bQueue:= FALSE);
+		IF SendCurrentPosition THEN
+			THIS^.nLastPositionUpdateValue := nPositionValue;
+		END_IF
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetPosition" Id="{fe0787c0-6824-4850-a526-3e5bb2eaf9e4}">
+      <Declaration><![CDATA[METHOD SetPosition : BOOL
+VAR_INPUT
+	nPosition : BYTE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.PO := nPosition;
+THIS^.bSetPositionOutput := TRUE;
+SetPosition := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Stop" Id="{fd70e836-b4ab-43ca-ae50-4d70e4c3913f}">
+      <Declaration><![CDATA[METHOD Stop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.bStopRequested := TRUE;
+Stop := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MqttBlindInputAdapter">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.Close">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.CyclicExecute">
+      <LineId Id="8" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="4" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="20" Count="4" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="34" Count="7" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="47" Count="4" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.GetMqttDeviceDiscovery">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.OnMqttMessage">
+      <LineId Id="12" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="36" Count="8" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="58" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.Open">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.SendCurrentPosition">
+      <LineId Id="6" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="13" Count="3" />
+      <LineId Id="23" Count="2" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.SetPosition">
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MqttBlindInputAdapter.Stop">
+      <LineId Id="5" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
