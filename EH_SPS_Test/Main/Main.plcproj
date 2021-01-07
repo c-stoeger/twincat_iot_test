@@ -62,6 +62,9 @@
     <Compile Include="POUs\Commands\FB_MultiCommand_02.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FunctionBlocks\FB_BlindControlS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FunctionBlocks\FB_Light.TcPOU">
       <SubType>Code</SubType>
     </Compile>

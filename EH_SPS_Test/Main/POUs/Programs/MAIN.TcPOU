@@ -52,7 +52,7 @@ VAR
 								sIdentifier := 'schlafz_l',
 								sName := 'Rolladen links');
 	fbRolloInput : OSCAT_BUILDING.BLIND_INPUT;
-	fbRolloControl : OSCAT_BUILDING.BLIND_CONTROL_S;
+	fbRolloControl : FB_BlindControlS;
 	bRolloSup AT %I* : BOOL;
 	bRolloSdn AT %I* : BOOL;
 	bRolloMup AT %Q* : BOOL;
@@ -89,6 +89,7 @@ ELSE
 		
 	fbRolloControl(UP := fbRolloInput.QU,
 		DN := fbRolloInput.QD,
+		LOAD := fbMqttBlindAdapter.Q,
 		S_IN := fbRolloInput.STATUS,
 		PI := fbRolloInput.PO,
 		T_UP := T#10S,
@@ -132,7 +133,9 @@ fbMqttController.Execute(bMqttClientConnect);]]></ST>
       <LineId Id="577" Count="0" />
       <LineId Id="652" Count="0" />
       <LineId Id="722" Count="0" />
-      <LineId Id="582" Count="7" />
+      <LineId Id="582" Count="3" />
+      <LineId Id="786" Count="0" />
+      <LineId Id="586" Count="3" />
       <LineId Id="591" Count="2" />
       <LineId Id="580" Count="0" />
       <LineId Id="575" Count="0" />

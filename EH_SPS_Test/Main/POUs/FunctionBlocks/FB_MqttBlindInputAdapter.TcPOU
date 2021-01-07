@@ -14,7 +14,7 @@ VAR
 	fbDeviceDiscovery : FB_MqttCoverPositionDiscovery;
 	stConfig : ST_MqttCoverPositionConfiguration;
 	bSetPositionOutput : BOOL; // var for cycle synchronisation
-	tSendPositionUpdatesPeriod : TIME := T#1s;
+	tSendPositionUpdatesPeriod : TIME := T#250ms;
 	tLastPositionUpdate : TIME := T#0S;
 	tCurrent : TIME;
 	nLastPositionUpdateValue : BYTE;
@@ -85,7 +85,7 @@ stDevinfo.name := sName;
 THIS^.fbDeviceDiscovery.DeviceInformation := stDevinfo;
 
 THIS^.stConfig.name := sName;
-THIS^.stConfig.device_class := GVL_MQTT_CONST.COVER_DEV_CLASS_BLIND;
+THIS^.stConfig.device_class := GVL_MQTT_CONST.COVER_DEV_CLASS_ROLLO;
 THIS^.stConfig.optimistic := FALSE;
 THIS^.stConfig.unique_id := sIdentifier;
 sTemp := CONCAT(STR1 := sMainTopic, STR2 := '/');
