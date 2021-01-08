@@ -113,7 +113,7 @@
 					<Vars VarGrpType="2" AreaNo="1">
 						<Name>PlcTask Outputs</Name>
 						<Var>
-							<Name>MAIN.fbKitchenLight.bActive</Name>
+							<Name>MAIN.fbLight.bActive</Name>
 							<Comment><![CDATA[ output of the FB. This is the state of the light.]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
@@ -1479,7 +1479,7 @@ Bit1: Value smaller than Limit2]]></Comment>
 				<Link VarA="PlcTask Inputs^MAIN.bRolloIn" VarB="Channel 1^Input"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 9 (EL2652)">
-				<Link VarA="PlcTask Outputs^MAIN.fbKitchenLight.bActive" VarB="Channel 1^Output"/>
+				<Link VarA="PlcTask Outputs^MAIN.fbLight.bActive" VarB="Channel 1^Output"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>

@@ -16,7 +16,9 @@ VAR
 	
 	// Receivers:
 	// Light in the kitchen
+	fbLight: FB_Light;
 	fbKitchenLight: FB_MqttLightDecorator(
+		iSwitchable := fbLight,
 		rMqttController := fbMqttController,
 		sMainTopic := 'haus/kueche/esstisch/licht',
 		sIdentifier := 'licht_esstisch',

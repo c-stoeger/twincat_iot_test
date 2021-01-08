@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
   <POU Name="FB_MqttLightDecorator" Id="{6ebf0452-2f75-444e-81f6-69cd58362e1d}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLightDecorator EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLightDecorator EXTENDS FB_SwitchableDecoratorBase IMPLEMENTS I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
@@ -25,6 +25,7 @@ END_VAR
 VAR_INPUT
 	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	iSwitchable : I_Switchable;  // The component which shall be decorated
 	rMqttController : REFERENCE TO FB_MqttController;
 	sMainTopic : STRING(255); // The topic to publish
 	sIdentifier : STRING(20);
@@ -80,7 +81,7 @@ END_VAR
       <Declaration><![CDATA[METHOD Off : BOOL
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[SUPER^.Off();
+        <ST><![CDATA[THIS^.Switchable.Off();
 THIS^.SendStatus();]]></ST>
       </Implementation>
     </Method>
@@ -88,7 +89,7 @@ THIS^.SendStatus();]]></ST>
       <Declaration><![CDATA[METHOD On : BOOL
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[SUPER^.On();
+        <ST><![CDATA[THIS^.Switchable.On();
 THIS^.SendStatus();]]></ST>
       </Implementation>
     </Method>
@@ -130,7 +131,7 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[IF (__ISVALIDREF(rMqttController) AND __ISVALIDREF(rMqttController.MqttClient)) THEN
 	IF (rMqttController.MqttClient.bConnected) THEN
-		IF Active THEN
+		IF this^.Switchable.Active THEN
 			sStatus := sStateOnPayload;
 		ELSE
 			sStatus := sStateOffPayload;

@@ -52,7 +52,7 @@ END_VAR
       </Implementation>
     </Method>
     <Property Name="Switchable" Id="{642bef93-2d32-4d80-8746-c11d0387045f}">
-      <Declaration><![CDATA[PROPERTY PUBLIC Switchable : BOOL]]></Declaration>
+      <Declaration><![CDATA[PROPERTY PUBLIC Switchable : I_Switchable]]></Declaration>
       <Get Name="Get" Id="{2437e1b6-0d10-4898-ab36-9ce65545dd4f}">
         <Declaration><![CDATA[VAR
 END_VAR
