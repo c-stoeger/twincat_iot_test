@@ -71,7 +71,10 @@
     <Compile Include="POUs\FunctionBlocks\FB_MqttBlindInputAdapter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FunctionBlocks\FB_MqttLight.TcPOU">
+    <Compile Include="POUs\FunctionBlocks\FB_MqttLightDecorator.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FunctionBlocks\FB_SwitchableDecoratorBase.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FunctionBlocks\Homeassistant\Mqtt\FB_MqttController.TcPOU">

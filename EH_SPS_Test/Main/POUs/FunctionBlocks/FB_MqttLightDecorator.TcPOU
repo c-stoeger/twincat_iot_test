@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
-  <POU Name="FB_MqttLight" Id="{6ebf0452-2f75-444e-81f6-69cd58362e1d}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLight EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
+  <POU Name="FB_MqttLightDecorator" Id="{6ebf0452-2f75-444e-81f6-69cd58362e1d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MqttLightDecorator EXTENDS FB_Light IMPLEMENTS I_MqttMessageReceiver, I_MqttDeviceDiscoveryProvider
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
@@ -143,10 +143,10 @@ END_VAR]]></Declaration>
 END_IF]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_MqttLight">
+    <LineIds Name="FB_MqttLightDecorator">
       <LineId Id="9" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.FB_init">
+    <LineIds Name="FB_MqttLightDecorator.FB_init">
       <LineId Id="36" Count="0" />
       <LineId Id="56" Count="0" />
       <LineId Id="37" Count="3" />
@@ -164,18 +164,18 @@ END_IF]]></ST>
       <LineId Id="41" Count="4" />
       <LineId Id="14" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.GetMqttDeviceDiscovery">
+    <LineIds Name="FB_MqttLightDecorator.GetMqttDeviceDiscovery">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.Off">
+    <LineIds Name="FB_MqttLightDecorator.Off">
       <LineId Id="6" Count="0" />
       <LineId Id="13" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.On">
+    <LineIds Name="FB_MqttLightDecorator.On">
       <LineId Id="4" Count="0" />
       <LineId Id="15" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.OnMqttMessage">
+    <LineIds Name="FB_MqttLightDecorator.OnMqttMessage">
       <LineId Id="6" Count="1" />
       <LineId Id="12" Count="1" />
       <LineId Id="15" Count="1" />
@@ -188,7 +188,7 @@ END_IF]]></ST>
       <LineId Id="24" Count="0" />
       <LineId Id="23" Count="0" />
     </LineIds>
-    <LineIds Name="FB_MqttLight.SendStatus">
+    <LineIds Name="FB_MqttLightDecorator.SendStatus">
       <LineId Id="6" Count="1" />
       <LineId Id="15" Count="1" />
       <LineId Id="18" Count="1" />
